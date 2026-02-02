@@ -10,7 +10,7 @@ Students must submit the following three items:
 
 - **Code:** A GitHub repository which includes a `README.md` file.
 - **Presentation:** A presentation and live demo lasting 5-10 minutes.
-- **Documentation:** A project document based on the provided template.
+- **Documentation:** A project document based on the provided [template](template.md).
 
 ## Technical Scope & Requirements
 
@@ -37,6 +37,10 @@ Examples of suitable projects include:
 - User management systems.
 - An online store.
 - Implementing a popular board game.
+
+## Rubric
+
+View the [rubric](rubric.md) for more details on how the project will be evaluated.
 
 ## Process
 
