@@ -8,15 +8,19 @@
 ### Purpose
 
 **What is the problem or the opportunity that the project is investigating?**
+
 Job searching lacks a centralized place to organize everything like job listings, application statuses, interview notes, followups, emails. This project provides a system to organize the information and also provide visibility through the job application lifecycle.
 
 **Why is this problem valuable to address?**
+
 A disorganized job search can lead to missed follow-ups, duplicated applications, mistracked interview stages, and reduced hiring/offer rates. In this job market, better organization can streamline the process and directly impact employment outcomes.
 
 **What is the current state (e.g. unsatisfied users, lost revenue)?**
+
 Many users like myself rely on manually tracking through tools like spreadsheets, notes apps, or sheer memory to track applications. While platforms like LinkedIn and Indeed provide job listings they lack hiring pipeline tools beyond just what was saved or applied.
 
 **What is the desired state?**
+
 A centralized dashboard where users can:
 - manage applications(company, role, salary range, location, link),
 - track progress through defined stages (Saved, Applied, Interviewing, Offer, Rejected),
@@ -26,17 +30,21 @@ A centralized dashboard where users can:
 - store attachments/notes/links
 
 **Has this problem been addressed by other projects? What were the outcomes?**
+
 From what I have researched, platforms like Hunter and other tools have similar pipeline style tracking systems but are subscription-based, have limited customization, or just dont integrate enough relational data modeling, resulting in going off app…users eventually just result to using excel or combination of other manual ways to note/track jobs.
 
 ### Industry/ Domain
 
 **What is the industry/ domain?**
-The project falls within the Job Search Technology and Career Management Software domain, which is part of the broader HR Technology (HRTech) industry.
+
+he project falls within the Job Search Technology and Career Management Software domain, which is part of the broader HR Technology (HRTech) industry.
 
 **What is the current state of this industry? (e.g. challenges from startups)**
+
 The industry is highly competitive and dominated by large platforms such as LinkedIn and Indeed--if you were to narrow the scope to job discovery. Startups in this space aim to provide more user-centered tools that improve organization, automation, and analytics during the job search process.
 
 **What is the overall industry value-chain?**
+
 The value chain typically includes:
 - Employers creating job listings
 - Platforms distributing job postings
@@ -55,6 +63,7 @@ This project operates within the candidate management stage of the value chain, 
 - Productivity and career management
 
 **Is the project relevant to other industries?**
+
 Yes. The core architecture of this system could be adapted to other pipeline-based workflows such as sales tracking/CRM systems, project management tools, freelance client tracking, or college admissions tracking systems. The underlying design pattern is applicable to any structured multi-stage process.
 
 ### Stakeholders
