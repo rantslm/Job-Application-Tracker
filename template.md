@@ -104,8 +104,6 @@ JobTrail is a client–server web application. Users interact with a React-based
 - **Axios / Fetch** – API client for sending requests to the server
 - **UI Library (optional: MUI / Chakra / etc.)** – form components and layout styling
 
----
-
 #### Server (Back-End)
 
 - **Node.js** – JavaScript runtime for the server
@@ -118,8 +116,6 @@ JobTrail is a client–server web application. Users interact with a React-based
   - `POST /api/auth/register` – creates a user
   - `POST /api/auth/login` – verifies email and password, returns user information (e.g., `userId`)
   - Subsequent requests include `userId` to scope data to the logged-in user
-
----
 
 #### Database
 
@@ -335,8 +331,49 @@ so that my dashboard stays organized.
 
 ### User Flow
 
-- Present as a flow diagram the steps a user may make in interacting with the software.
+```mermaid
+flowchart TD
+  openApp --> hasAccount{Have account}
+  hasAccount -->|No| register[Register]
+  register --> login[Login]
+  hasAccount -->|Yes| login
 
+  login --> loginOk{Login successful}
+  loginOk -->|No| loginError[Show error]
+  loginError --> login
+  loginOk -->|Yes| dashboard[Dashboard]
+
+  dashboard --> createApp[Create application]
+  createApp --> enterDetails[Enter company role salary location link]
+  enterDetails --> saveApp[Save application]
+  saveApp --> detail[Application detail]
+
+  dashboard --> openExisting[Open application]
+  openExisting --> detail
+
+  detail --> updateStage[Update stage]
+  updateStage --> saved[Changes saved]
+
+  detail --> logActivity[Log activity]
+  logActivity --> saved
+
+  detail --> addTask[Add task]
+  addTask --> saved
+
+  detail --> addContact[Add contact]
+  addContact --> saved
+
+  detail --> addNotes[Add notes]
+  addNotes --> saved
+
+  detail --> archive[Archive or delete]
+  archive --> dashboard
+
+  saved --> detail
+  detail --> dashboard
+
+  dashboard --> logout[Logout]
+```
 ### Wireframe Design
 
 - Show elements of the user interface, either manually or via a tool such as Figma.
