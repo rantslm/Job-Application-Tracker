@@ -376,7 +376,7 @@ flowchart TD
 ```
 ### Wireframe Design
 
-- Show elements of the user interface, either manually or via a tool such as Figma.
+[Figma Wireframe Link](https://www.figma.com/design/qu0UwOOdNcSMB6rO7JQc2W/capstone-project?node-id=0-1&t=TAoftvDqBNp72U0V-1)
 
 ## Open Questions / Out of Scope
 
