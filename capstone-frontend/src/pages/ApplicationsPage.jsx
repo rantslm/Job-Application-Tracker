@@ -55,6 +55,12 @@ function ApplicationsPage() {
   // Stores the application currently being edited
   const [editingApplicationId, setEditingApplicationId] = useState(null);
 
+  // Stores text entered into the search field
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Stores selected stage filter
+  const [stageFilter, setStageFilter] = useState('All');
+
   /**
    * Fetch applications for the logged-in user.
    * the JWT token is read from localStorage and sent in the Authorization header
@@ -289,6 +295,19 @@ function ApplicationsPage() {
       setError(error.message);
     }
   }
+  /**
+   * Filters applications based on search term and selected stage.
+   */
+  const filteredApplications = applications.filter((application) => {
+    const matchesSearch =
+      application.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      application.position_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (application.location || '').toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStage = stageFilter === 'All' || application.stage === stageFilter;
+
+    return matchesSearch && matchesStage;
+  });
 
   return (
     <AppLayout title="Applications">
@@ -306,7 +325,28 @@ function ApplicationsPage() {
           <Typography variant="h5" fontWeight={700}>
             My Applications
           </Typography>
+          <TextField
+            size="small"
+            label="Search"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+          />
 
+          <TextField
+            select
+            size="small"
+            label="Stage"
+            value={stageFilter}
+            onChange={(event) => setStageFilter(event.target.value)}
+            sx={{ minWidth: 160 }}
+          >
+            <MenuItem value="All">All</MenuItem>
+            <MenuItem value="Saved">Saved</MenuItem>
+            <MenuItem value="Applied">Applied</MenuItem>
+            <MenuItem value="Interviewing">Interviewing</MenuItem>
+            <MenuItem value="Offer">Offer</MenuItem>
+            <MenuItem value="Rejected">Rejected</MenuItem>
+          </TextField>
           <Button variant="contained" onClick={handleOpenDialog}>
             New Application
           </Button>
@@ -318,20 +358,20 @@ function ApplicationsPage() {
         {/* Loading state */}
         {loading ? (
           <Typography>Loading applications...</Typography>
-        ) : applications.length === 0 ? (
+        ) : filteredApplications.length === 0 ? (
           // Empty state if user has no applications yet
           <Paper sx={{ p: 3, borderRadius: 3 }}>
             <Typography variant="h6" gutterBottom>
               No applications yet
             </Typography>
             <Typography>
-              Create your first application to start tracking your job search.
+              Try adjusting your search or filter, or create a new applicaiton.
             </Typography>
           </Paper>
         ) : (
           // Application cards
           <Stack spacing={2}>
-            {applications.map((application) => (
+            {filteredApplications.map((application) => (
               <Paper key={application.id} sx={{ p: 3, borderRadius: 3 }}>
                 <Stack spacing={1.5}>
                   <Box
