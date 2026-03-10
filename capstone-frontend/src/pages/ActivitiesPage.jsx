@@ -22,12 +22,12 @@ import {
 /* Activity icons */
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
-import VideocamIcon from '@mui/icons-material/Videocam';
 import HandshakeIcon from '@mui/icons-material/Handshake';
 
 /* UI icons */
 import PersonIcon from '@mui/icons-material/Person';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import EditNoteIcon from '@mui/icons-material/EditNote';
 
 /* Layout wrapper used across pages */
 import AppLayout from '../components/AppLayout';
@@ -336,4 +336,412 @@ function ActivitiesPage() {
     if (!text) return 'No summary';
     return text.length > 80 ? `${text.slice(0, 80)}...` : text;
   }
+  function getActivityIcon(type) {
+    switch (type) {
+      case 'Call':
+        return <PhoneIcon fontSize="small" />;
+      case 'Email':
+        return <EmailIcon fontSize="small" />;
+      case 'Interview':
+        return <HandshakeIcon fontSize="small" />;
+      case 'Note':
+        return <EditNoteIcon fontSize="small" />;
+      default:
+        return <EmailIcon fontSize="small" />;
+    }
+  }
+  return (
+    <AppLayout title="Activities">
+      <Stack spacing={3}>
+        {/* =========================
+          PAGE HEADER
+         ========================= */}
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: { xs: 'flex-start', md: 'center' },
+            gap: 2,
+            flexDirection: { xs: 'column', md: 'row' },
+            flexWrap: 'wrap',
+          }}
+        >
+          {/* Page title */}
+          <Typography variant="h5" fontWeight={700}>
+            Activities
+          </Typography>
+
+          {/* Filter by application */}
+          <TextField
+            select
+            size="small"
+            label="Application"
+            value={applicationFilter}
+            onChange={(event) => setApplicationFilter(event.target.value)}
+            sx={{ minWidth: 180 }}
+          >
+            {applicationOptions.map((option) => (
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </TextField>
+
+          {/* Filter by activity type */}
+          <TextField
+            select
+            size="small"
+            label="Activity Type"
+            value={activityTypeFilter}
+            onChange={(event) => setActivityTypeFilter(event.target.value)}
+            sx={{ minWidth: 170 }}
+          >
+            <MenuItem value="All">All</MenuItem>
+            <MenuItem value="Email">Email</MenuItem>
+            <MenuItem value="Call">Call</MenuItem>
+            <MenuItem value="Interview">Interview</MenuItem>
+            <MenuItem value="Note">Note</MenuItem>
+          </TextField>
+
+          {/* Search activities by type, company, summary, or details */}
+          <TextField
+            size="small"
+            label="Search"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+          />
+
+          {/* Add Activity button
+            For now this opens a placeholder dialog until activity/application/contact
+            creation flow is finalized. */}
+          <Button variant="contained" onClick={handleOpenDialog}>
+            Add Activity
+          </Button>
+        </Box>
+
+        {/* Global fetch error */}
+        {error && <Alert severity="error">{error}</Alert>}
+
+        {/* =========================
+          LOADING / MAIN CONTENT
+         ========================= */}
+        {loading ? (
+          <Typography>Loading activities...</Typography>
+        ) : (
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', lg: '1.5fr 1fr' },
+              gap: 3,
+            }}
+          >
+            {/* =========================
+              LEFT PANEL: ACTIVITY LIST
+             ========================= */}
+            <Paper sx={{ borderRadius: 3, overflow: 'hidden' }}>
+              {/* Count of filtered activities */}
+              <Box sx={{ p: 3, pb: 2 }}>
+                <Typography variant="subtitle1" fontWeight={700}>
+                  {filteredActivities.length} Activit
+                  {filteredActivities.length === 1 ? 'y' : 'ies'}
+                </Typography>
+              </Box>
+
+              {/* Column headers */}
+              <Box
+                sx={{
+                  px: 3,
+                  pb: 1.5,
+                  display: 'grid',
+                  gridTemplateColumns: '110px 50px 120px 1fr 1.3fr',
+                  gap: 2,
+                }}
+              >
+                <Typography variant="caption" fontWeight={700} color="text.secondary">
+                  Date
+                </Typography>
+                <Typography variant="caption" fontWeight={700} color="text.secondary">
+                  Type
+                </Typography>
+                <Typography variant="caption" fontWeight={700} color="text.secondary">
+                  Activity
+                </Typography>
+                <Typography variant="caption" fontWeight={700} color="text.secondary">
+                  Application
+                </Typography>
+                <Typography variant="caption" fontWeight={700} color="text.secondary">
+                  Summary
+                </Typography>
+              </Box>
+
+              <Divider />
+
+              {/* Empty state */}
+              {filteredActivities.length === 0 ? (
+                <Box sx={{ p: 3 }}>
+                  <Typography variant="h6" gutterBottom>
+                    No activities yet
+                  </Typography>
+                  <Typography color="text.secondary">
+                    Add your first activity to start tracking calls, emails, interviews,
+                    and notes.
+                  </Typography>
+                </Box>
+              ) : (
+                <Stack divider={<Divider />}>
+                  {filteredActivities.map((activity) => {
+                    const isSelected = selectedActivity?.id === activity.id;
+
+                    return (
+                      <Box
+                        key={activity.id}
+                        onClick={() => setSelectedActivity(activity)}
+                        sx={{
+                          cursor: 'pointer',
+                          display: 'grid',
+                          gridTemplateColumns: '6px 110px 50px 120px 1fr 1.3fr',
+                          gap: 2,
+                          alignItems: 'center',
+
+                          /* Selected row styling:
+                           - left orange selector bar
+                           - sheer orange background */
+                          bgcolor: isSelected
+                            ? 'rgba(245, 158, 11, 0.10)'
+                            : 'transparent',
+                          transition: '0.2s ease',
+                          '&:hover': {
+                            bgcolor: isSelected
+                              ? 'rgba(245, 158, 11, 0.15)'
+                              : 'rgba(0,0,0,0.03)',
+                          },
+                        }}
+                      >
+                        {/* Orange selection bar */}
+                        <Box
+                          sx={{
+                            alignSelf: 'stretch',
+                            bgcolor: isSelected ? '#F59E0B' : 'transparent',
+                          }}
+                        />
+
+                        {/* Date column */}
+                        <Box sx={{ py: 2, pl: 1 }}>
+                          <Typography variant="body2">
+                            {formatActivityDate(activity.occurred_at)}
+                          </Typography>
+                        </Box>
+
+                        {/* Icon column */}
+                        <Box sx={{ py: 2, display: 'flex', alignItems: 'center' }}>
+                          {getActivityIcon(activity.type)}
+                        </Box>
+
+                        {/* Activity type column */}
+                        <Box sx={{ py: 2 }}>
+                          <Typography fontWeight={600}>{activity.type}</Typography>
+                        </Box>
+
+                        {/* Related application column */}
+                        <Box sx={{ py: 2 }}>
+                          <Typography color="text.secondary">
+                            {activity.application?.company_name || 'General'}
+                          </Typography>
+                        </Box>
+
+                        {/* Summary snippet column */}
+                        <Box sx={{ py: 2, pr: 2 }}>
+                          <Typography color="text.secondary">
+                            {getSummarySnippet(activity.summary)}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    );
+                  })}
+                </Stack>
+              )}
+            </Paper>
+
+            {/* =========================
+              RIGHT PANEL: ACTIVITY DETAIL
+             ========================= */}
+            <Paper sx={{ p: 3, borderRadius: 3, minHeight: 420 }}>
+              {!selectedActivity ? (
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    No activity selected
+                  </Typography>
+                  <Typography color="text.secondary">
+                    Select an activity from the list to view details.
+                  </Typography>
+                </Box>
+              ) : (
+                <Stack spacing={3}>
+                  {/* Top section with optional edit action */}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      gap: 2,
+                    }}
+                  >
+                    <Box>
+                      <Typography variant="h6" fontWeight={700}>
+                        Activity Detail
+                      </Typography>
+                      <Typography color="text.secondary">
+                        Review the selected activity record.
+                      </Typography>
+                    </Box>
+
+                    {/* Edit button:
+                      later this can open the same dialog in edit mode with all fields preloaded */}
+                    <Button variant="outlined" size="small">
+                      Edit Activity
+                    </Button>
+                  </Box>
+
+                  <Divider />
+
+                  {/* Contact block
+                    Placeholder for now because current Activity model is linked to Application,
+                    not directly to Contact yet. */}
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight={700} gutterBottom>
+                      Contact
+                    </Typography>
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Avatar sx={{ width: 40, height: 40 }}>
+                        <PersonIcon fontSize="small" />
+                      </Avatar>
+
+                      <Box sx={{ flex: 1 }}>
+                        <Typography fontWeight={600}>
+                          Contact link coming soon
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Activities are currently linked to applications. Direct
+                          contact linking can be added in a later step.
+                        </Typography>
+                      </Box>
+
+                      {/* Future link to Contacts page */}
+                      <IconButton size="small" disabled>
+                        <ArrowForwardIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  </Box>
+
+                  <Divider />
+
+                  {/* Activity type block */}
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight={700} gutterBottom>
+                      Activity Type
+                    </Typography>
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      {getActivityIcon(selectedActivity.type)}
+                      <Typography>{selectedActivity.type}</Typography>
+                    </Box>
+                  </Box>
+
+                  <Divider />
+
+                  {/* Related application block */}
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight={700} gutterBottom>
+                      Related Application
+                    </Typography>
+
+                    {selectedActivity.application ? (
+                      <Typography>
+                        {selectedActivity.application.company_name} —{' '}
+                        {selectedActivity.application.position_title}
+                      </Typography>
+                    ) : (
+                      <Typography color="text.secondary">General</Typography>
+                    )}
+                  </Box>
+
+                  <Divider />
+
+                  {/* Date / time block */}
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight={700} gutterBottom>
+                      Date and Time
+                    </Typography>
+                    <Typography color="text.secondary">
+                      {formatActivityDateTime(selectedActivity.occurred_at)}
+                    </Typography>
+                  </Box>
+
+                  <Divider />
+
+                  {/* Summary block */}
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight={700} gutterBottom>
+                      Summary
+                    </Typography>
+                    <Typography color="text.secondary">
+                      {selectedActivity.summary || 'No summary provided'}
+                    </Typography>
+                  </Box>
+
+                  <Divider />
+
+                  {/* Details / notes block */}
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight={700} gutterBottom>
+                      Notes
+                    </Typography>
+                    <Typography color="text.secondary">
+                      {selectedActivity.details || 'No additional details'}
+                    </Typography>
+                  </Box>
+                </Stack>
+              )}
+            </Paper>
+          </Box>
+        )}
+      </Stack>
+
+      {/* =========================
+        PLACEHOLDER ADD ACTIVITY DIALOG
+       ========================= */}
+      <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="sm">
+        <DialogTitle>Add Activity</DialogTitle>
+
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            {submitError && <Alert severity="error">{submitError}</Alert>}
+
+            <Typography color="text.secondary">
+              Activity creation flow is temporarily being finalized.
+            </Typography>
+
+            <Typography variant="body2" color="text.secondary">
+              The final dialog will support:
+            </Typography>
+
+            <Box component="ul" sx={{ m: 0, pl: 3, color: 'text.secondary' }}>
+              <li>selecting an application</li>
+              <li>selecting an activity type</li>
+              <li>setting date and time</li>
+              <li>editing summary and notes</li>
+              <li>future contact linking</li>
+            </Box>
+          </Stack>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Close</Button>
+        </DialogActions>
+      </Dialog>
+    </AppLayout>
+  );
 }
+
+export default ActivitiesPage;

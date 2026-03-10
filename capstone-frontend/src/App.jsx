@@ -13,7 +13,7 @@ function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/applications" element={<ApplicationsPage />} />
         <Route path="/contacts" element={<ContactsPage />} />
-        <Route path="/activities" element={<ActivitiesPage />} />
+        <Route path="/activity" element={<ActivitiesPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
