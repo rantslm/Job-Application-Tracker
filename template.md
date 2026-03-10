@@ -22,6 +22,7 @@ Many users like myself rely on manually tracking through tools like spreadsheets
 **What is the desired state?**
 
 A centralized dashboard where users can:
+
 - manage applications(company, role, salary range, location, link),
 - track progress through defined stages (Saved, Applied, Interviewing, Offer, Rejected),
 - log interview activities(calls, emails, interviews),
@@ -46,6 +47,7 @@ The industry is highly competitive and dominated by large platforms such as Link
 **What is the overall industry value-chain?**
 
 The value chain typically includes:
+
 - Employers creating job listings
 - Platforms distributing job postings
 - Candidates discovering and applying to jobs
@@ -55,6 +57,7 @@ The value chain typically includes:
 This project operates within the candidate management stage of the value chain, focusing on applicant-side organization rather than employer-side recruitment systems.
 
 **What are the key concepts in the industry?**
+
 - Applicant tracking
 - Hiring pipeline stages
 - Workflow management
@@ -83,6 +86,7 @@ Secondary stakeholders, such as career coaches or mentors, care because the syst
 From a technical perspective, developers and maintainers care because the system demonstrates scalable architecture, secure authentication, structured data modeling, and maintainable code practices. These qualities ensure the software is reliable, extensible, and adaptable to future enhancements.
 
 **What are the stakeholders’ expectations?**
+
 - Secure authentication and data privacy
 - Reliable CRUD functionality
 - Clear dashboard visualization of application stages
@@ -95,7 +99,6 @@ From a technical perspective, developers and maintainers care because the system
 ### Architecture Diagram
 
 JobTrail is a client–server web application. Users interact with a React-based front-end which communicates with an Express/Node back-end via REST API calls. The back-end follows an MVC structure (Routes → Controllers → Models) and performs CRUD operations against a MySQL database. Authentication is implemented at an MVP level using email/password login and storing the logged-in user context on the client to scope data to that user.
-
 
 #### Client (Front-End)
 
@@ -155,6 +158,7 @@ flowchart LR
   BE --- BE_CRUD
   DB --- DB_TABLES
 ```
+
 ---
 
 ### User Stories
@@ -171,6 +175,7 @@ As a user, I want to create an account with my email and password
 so that I can securely access and manage my job applications.
 
 **Acceptance Criteria:**
+
 - Given a user submits valid registration details, then a new account is created and stored in the database.
 - Given a user submits an email that already exists, then the system displays an appropriate error message.
 
@@ -188,6 +193,7 @@ As a user, I want to log in using my credentials
 so that I can access my saved job applications and data.
 
 **Acceptance Criteria:**
+
 - Given a user enters valid login credentials, then they are authenticated and redirected to the dashboard.
 - Given invalid credentials are entered, then the system displays an error message.
 
@@ -205,6 +211,7 @@ As a user, I want to add a job application including company, role, salary range
 so that I can track all relevant details in one place.
 
 **Acceptance Criteria:**
+
 - Given a user submits a completed job application form, then the application is saved in the database.
 - Given required fields are missing, then the system prevents submission and displays validation errors.
 
@@ -222,6 +229,7 @@ As a user, I want to update an application's status
 so that I can clearly see where I stand in the hiring process.
 
 **Acceptance Criteria:**
+
 - Given a user selects a new hiring stage, then the updated stage is saved to the database.
 - Given the dashboard loads, then each application displays its current stage.
 
@@ -239,6 +247,7 @@ As a user, I want to record interview dates and notes
 so that I can track communication history and prepare for next steps.
 
 **Acceptance Criteria:**
+
 - Given a user submits interview details, then the activity is saved and linked to the correct application.
 - Given an application is viewed, then all associated interview activities are displayed.
 
@@ -256,6 +265,7 @@ As a user, I want to save contact details for recruiters or hiring managers
 so that I can easily reference them for follow-ups.
 
 **Acceptance Criteria:**
+
 - Given a user submits contact information, then the contact is saved in the database.
 - Given a user views an application, then associated contact details are displayed.
 
@@ -273,6 +283,7 @@ As a user, I want to create reminders for follow-ups or deadlines
 so that I do not miss important actions in the hiring process.
 
 **Acceptance Criteria:**
+
 - Given a user creates a task with a due date, then the task is saved and linked to the appropriate application.
 - Given a user marks a task as complete, then the task status updates accordingly.
 
@@ -290,6 +301,7 @@ As a user, I want to see a summary of my applications
 so that I can quickly understand my overall progress.
 
 **Acceptance Criteria:**
+
 - Given a user logs in, then the dashboard displays total application count.
 - Given applications exist in different stages, then the dashboard shows a breakdown by stage.
 
@@ -307,6 +319,7 @@ As a user, I want to filter or search my applications
 so that I can quickly find specific entries.
 
 **Acceptance Criteria:**
+
 - Given a user enters search criteria, then only matching applications are displayed.
 - Given a user selects a stage filter, then only applications in that stage are shown.
 
@@ -324,6 +337,7 @@ As a user, I want to delete or archive old applications
 so that my dashboard stays organized.
 
 **Acceptance Criteria:**
+
 - Given a user selects delete, then the application is removed from the database.
 - Given a user selects archive, then the application is marked inactive and removed from the active dashboard view.
 
@@ -374,6 +388,7 @@ flowchart TD
 
   dashboard --> logout[Logout]
 ```
+
 ### Wireframe Design
 
 [Figma Wireframe Link](https://www.figma.com/design/qu0UwOOdNcSMB6rO7JQc2W/capstone-project?node-id=0-1&t=TAoftvDqBNp72U0V-1)
@@ -395,45 +410,161 @@ flowchart TD
 #### Non-functional Requirements
 
 - What are the key security requirements? (e.g. login, storage of personal details, inactivity timeout, data encryption)
-    - Users must log in to access their dashboard and saved records.
-    - User data should be scoped so users can only view and edit their own applications.
-    - Password input should not be displayed in plain text on the UI.
-    - Sensitive configuration values (database credentials) must be stored in environment variables (e.g., `.env`) and not committed to GitHub.
-    - Basic input validation should be enforced to reduce invalid or unsafe submissions.
+  - Users must log in to access their dashboard and saved records.
+  - User data should be scoped so users can only view and edit their own applications.
+  - Password input should not be displayed in plain text on the UI.
+  - Sensitive configuration values (database credentials) must be stored in environment variables (e.g., `.env`) and not committed to GitHub.
+  - Basic input validation should be enforced to reduce invalid or unsafe submissions.
 
 - How many transactions should be enabled at peak time?
-    - Expected peak load is small (capstone scale): approximately 1–10 concurrent users.
-    - The system should support typical CRUD activity during peak time (e.g., creating and updating applications/tasks) without noticeable lag.
-    - Target: handle multiple requests per minute without errors during demo usage.
+  - Expected peak load is small (capstone scale): approximately 1–10 concurrent users.
+  - The system should support typical CRUD activity during peak time (e.g., creating and updating applications/tasks) without noticeable lag.
+  - Target: handle multiple requests per minute without errors during demo usage.
 
 - How easy to use does the software need to be?
-    - The application should be easy to learn with minimal instruction.
-    - Navigation should be consistent across pages (same layout and controls).
-    - Forms should provide clear validation messages for missing or invalid fields.
-    - The dashboard should make it easy to see application status at a glance.
+  - The application should be easy to learn with minimal instruction.
+  - Navigation should be consistent across pages (same layout and controls).
+  - Forms should provide clear validation messages for missing or invalid fields.
+  - The dashboard should make it easy to see application status at a glance.
 
 - How quickly should the application respond to user requests?
-    - The app should respond to most user actions within 1–2 seconds in normal conditions.
-    - Dashboard and list views should load quickly with pagination or filtering if needed.
+  - The app should respond to most user actions within 1–2 seconds in normal conditions.
+  - Dashboard and list views should load quickly with pagination or filtering if needed.
 - How reliable must the application be? (e.g. mean time between failures)
-    - The system should be stable for usage during demo and testing.
-    - Errors should be handled with helpful messages (no crashing UI).
-    - Target: basic availability during demo usage; logging should help diagnose failures.
+  - The system should be stable for usage during demo and testing.
+  - Errors should be handled with helpful messages (no crashing UI).
+  - Target: basic availability during demo usage; logging should help diagnose failures.
 - Does the software conform to any technical standards to ease maintainability?
-    - Backend follows MVC structure (Routes → Controllers → Models) for consistency and readability.
-    - RESTful endpoint naming conventions.
-    - Consistent code style and naming conventions (camelCase in JS, clear route naming).
-    - README includes setup steps and environment variable instructions.
+  - Backend follows MVC structure (Routes → Controllers → Models) for consistency and readability.
+  - RESTful endpoint naming conventions.
+  - Consistent code style and naming conventions (camelCase in JS, clear route naming).
+  - README includes setup steps and environment variable instructions.
 
 ## Project Planning
 
-- Include GitHub project board showing key milestones (with dates) to complete the project.
+- [GitHub project board](https://github.com/users/rantslm/projects/1/views/1?layout=board)
 
 ### Testing Strategy
 
-- What were steps undertaken to achieve product quality?
-- How was each feature of the application tested?
-- How did you handle edge cases?
+#### What were steps undertaken to achieve product quality?
+
+Product quality was addressed through a combination of planning, structured development, manual verification, and automated testing. The application was built using a clear MVC backend structure with Sequelize models, protected API routes, and a relational MySQL database. Core functionality was developed incrementally and tested feature by feature rather than all at once. This reduced debugging complexity and helped confirm that each layer of the system worked correctly before moving on.
+
+To support quality, the following steps were undertaken:
+
+- designed the database schema and relationships before implementation
+- used migrations and seed data to keep the database structure consistent
+- separated concerns across routes, controllers, models, middleware, and frontend pages
+- protected user-specific data with JWT authentication and ownership checks
+- manually tested API flows with Hoppscotch during development
+- implemented automated backend tests using Jest and Supertest for key application functionality
+- used Git feature branches and incremental commits to keep development organized and reversible
+
+This process helped ensure that the application remained stable while new features were added.
+
+#### How was each feature of the application tested?
+
+Each feature was tested at both the API level and, where applicable, through the frontend interface.
+
+- **Authentication**
+
+Authentication was tested by verifying:
+
+- successful user registration
+- prevention of duplicate account creation
+- successful login with valid credentials
+- rejection of invalid login attempts
+- rejection of protected routes when no JWT token was provided
+
+These tests were performed through Jest/Supertest and also manually in Hoppscotch.
+
+- **Applications**
+
+Applications were tested through full CRUD flows:
+
+- create a new application
+- retrieve applications for the authenticated user
+- update an existing application
+- delete an application
+- confirm deleted applications no longer appear in results
+- confirm users only see their own applications
+
+This functionality was tested through Jest/Supertest and through the frontend applications page and form dialog.
+
+- **Contacts**
+
+Contacts were tested by:
+
+- creating a contact for a valid user-owned application
+- retrieving contacts for that application
+- confirming contacts were linked only to the correct parent application
+
+- **Activities**
+
+Activities were tested by:
+
+- creating interview or communication activity entries
+- retrieving activities by application
+- confirming activity data was associated with the correct authenticated user through the parent application
+
+- **Tasks**
+
+Tasks were tested by:
+
+- creating follow-up tasks for an application
+- retrieving tasks by application
+- confirming task records were linked correctly and returned only for the authenticated user’s application
+
+#### How did you handle edge cases?
+
+Edge cases were handled through validation, conditional checks, protected route logic, and defensive error handling.
+
+Examples include:
+
+- **Authentication edge cases**
+
+- missing email or password returns a `400` error
+- duplicate email registration returns a `409` error
+- invalid login credentials return a `401` error
+- missing or malformed JWT tokens return a `401` error
+
+- **Authorization / ownership edge cases**
+
+- users cannot access protected routes without a token
+- users can only retrieve applications associated with their own `user_id`
+- related resources such as contacts, activities, and tasks are only accessible if their parent application belongs to the authenticated user
+
+- **CRUD edge cases**
+
+- requests for missing records return appropriate not found responses
+- empty optional fields such as notes, salary, and applied date are safely handled as nullable values
+- numeric form values like salary ranges are normalized before submission
+- application creation and updates validate required fields such as company name and position title
+
+-**Front-end edge cases**
+
+- if no token exists, protected pages redirect back to the auth page
+- empty states are displayed when the user has no applications
+- filtered search states display a no-results message instead of failing silently
+- loading and error states are displayed during API requests to improve user feedback
+
+---
+
+#### Additional testing tools and evidence
+
+Automated testing was implemented using:
+
+- **Jest** for test execution
+- **Supertest** for API endpoint testing
+
+Manual API verification was completed using:
+
+- **Hoppscotch**
+
+The testing report includes:
+
+- automated test output showing passing test suites
+- manual API request screenshots for registration, login, protected routes, application CRUD, and related entity testing
 
 ### Implementation
 
@@ -456,6 +587,7 @@ Docker was selected because it:
 - **Database:** MySQL database used for persistent storage of Users, Applications, Activities, Tasks, and Contacts.
 
 Depending on deployment configuration, the database may be:
+
 - Hosted as a managed cloud database service, or
 - Containerized as part of the Docker Compose setup.
 
@@ -504,7 +636,6 @@ This ensures credentials and configuration details remain secure and can be adju
 - **Sensitive credentials exposure:**
   All secrets stored in environment variables and excluded from version control.
 
-
 ### End-to-end Solution
 
 - How well did the software meet its objectives?
@@ -513,9 +644,9 @@ This ensures credentials and configuration details remain secure and can be adju
 
 - Where is the code used in the project? (Use permalinks to GitHub)
 - What are the resources used in the project? (libraries, APIs, databases, tools, etc)
-    - **Frontend:** React, React Router, Axios/Fetch, (optional) UI library
-    - **Backend:** Node.js, Express.js
-    - **Database:** MySQL
-    - **Dev Tools:** Git/GitHub, VS Code, Postman or Hoppscotch, Mermaid Viewer
-    - **Testing:** Jest (and/or Supertest for API tests, if used)
-    - **Documentation:** Markdown (README), Mermaid diagrams
+  - **Frontend:** React, React Router, Axios/Fetch, (optional) UI library
+  - **Backend:** Node.js, Express.js
+  - **Database:** MySQL
+  - **Dev Tools:** Git/GitHub, VS Code, Postman or Hoppscotch, Mermaid Viewer
+  - **Testing:** Jest (and/or Supertest for API tests, if used)
+  - **Documentation:** Markdown (README), Mermaid diagrams
