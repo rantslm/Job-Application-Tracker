@@ -81,6 +81,47 @@ describe('Applications routes', () => {
     expect(foundApplication).toBeDefined();
     expect(foundApplication.company_name).toBe('Netflix');
   });
+
+  it('should update an existing application for an authenticated user', async () => {
+    const res = await request(app)
+      .put(`/applications/${createdApplicationId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        stage: 'Interviewing',
+        location: 'New York',
+        notes: 'Updated from Jest test',
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('id');
+    expect(res.body.stage).toBe('Interviewing');
+    expect(res.body.location).toBe('New York');
+    expect(res.body.notes).toBe('Updated from Jest test');
+  });
+
+  it('should delete an existing application for an authenticated user', async () => {
+    const res = await request(app)
+      .delete(`/applications/${createdApplicationId}`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('message');
+  });
+
+  it('should no longer return the deleted application in GET /applications', async () => {
+    const res = await request(app)
+      .get('/applications')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+
+    const deletedApplication = res.body.find(
+      (application) => application.id === createdApplicationId
+    );
+
+    expect(deletedApplication).toBeUndefined();
+  });
 });
 
 afterAll(async () => {
