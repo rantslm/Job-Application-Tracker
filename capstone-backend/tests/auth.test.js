@@ -1,5 +1,6 @@
 const request = require('supertest');
 const app = require('../src/app');
+const db = require('../models');
 
 describe('Auth routes', () => {
   const uniqueEmail = `testuser_${Date.now()}@example.com`;
@@ -79,4 +80,8 @@ describe('Auth routes', () => {
     expect(res.status).toBe(409);
     expect(res.body).toHaveProperty('error');
   });
+});
+
+afterAll(async () => {
+  await db.sequelize.close();
 });

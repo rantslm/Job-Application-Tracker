@@ -1,5 +1,6 @@
 const request = require('supertest');
 const app = require('../src/app');
+const db = require('../models');
 
 describe('Basic app routes', () => {
   it('should return API running message from GET /', async () => {
@@ -16,4 +17,8 @@ describe('Basic app routes', () => {
     expect(res.status).toBe(401);
     expect(res.body).toHaveProperty('error');
   });
+});
+
+afterAll(async () => {
+  await db.sequelize.close();
 });
