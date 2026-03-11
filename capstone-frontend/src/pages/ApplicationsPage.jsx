@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -22,6 +22,11 @@ import AppLayout from '../components/AppLayout';
 function ApplicationsPage() {
   // Used to redirect user if they are not authenticated
   const navigate = useNavigate();
+
+  /** used to detect when user navigates back to this page from another page
+   * so we can refresh the application list and detail view
+   */
+  const location = useLocation();
 
   // Stores fetched application records
   const [applications, setApplications] = useState([]);
@@ -321,6 +326,17 @@ function ApplicationsPage() {
       return;
     }
 
+    const requestedId = location.state?.applicationId;
+
+    if (requestedId) {
+      const matched = filteredApplications.find((app) => app.id === requestedId);
+
+      if (matched) {
+        setSelectedApplication(matched);
+        return;
+      }
+    }
+
     const selectedStillVisible = filteredApplications.some(
       (application) => application.id === selectedApplication?.id
     );
@@ -328,7 +344,7 @@ function ApplicationsPage() {
     if (!selectedStillVisible) {
       setSelectedApplication(filteredApplications[0]);
     }
-  }, [filteredApplications, selectedApplication]);
+  }, [filteredApplications, selectedApplication, location.state]);
 
   return (
     <AppLayout title="Applications">
