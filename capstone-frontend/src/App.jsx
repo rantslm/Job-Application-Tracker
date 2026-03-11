@@ -5,6 +5,7 @@ import DashboardPage from './pages/DashboardPage';
 import ContactsPage from './pages/ContactsPage';
 import ActivitiesPage from './pages/ActivitiesPage';
 import TasksPage from './pages/TasksPage';
+import ArchivePage from './pages/ArchivePage';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/contacts" element={<ContactsPage />} />
         <Route path="/activity" element={<ActivitiesPage />} />
         <Route path="/tasks" element={<TasksPage />} />
+        <Route path="/archive" element={<ArchivePage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
