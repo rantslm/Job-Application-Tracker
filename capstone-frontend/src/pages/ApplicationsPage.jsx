@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -14,6 +14,7 @@ import {
   DialogActions,
   TextField,
   MenuItem,
+  Divider,
 } from '@mui/material';
 
 import AppLayout from '../components/AppLayout';
@@ -25,15 +26,17 @@ function ApplicationsPage() {
   // Stores fetched application records
   const [applications, setApplications] = useState([]);
 
+  // Stores the application currently selected in the list
+  const [selectedApplication, setSelectedApplication] = useState(null);
+
   // UI feedback state
   const [error, setError] = useState('');
-  // Controls loading state while API request is running
   const [loading, setLoading] = useState(true);
 
-  // Controls whether the create application dialog is open
+  // Controls whether the create/edit application dialog is open
   const [openDialog, setOpenDialog] = useState(false);
 
-  // Stores form values for a new application
+  // Stores form values for a new or edited application
   const [formData, setFormData] = useState({
     company_name: '',
     position_title: '',
@@ -46,7 +49,7 @@ function ApplicationsPage() {
     notes: '',
   });
 
-  // Stores submission errors for the create form
+  // Stores submission errors for dialogs
   const [submitError, setSubmitError] = useState('');
 
   // Tracks whether the dialog is creating a new application or editing one
@@ -55,25 +58,37 @@ function ApplicationsPage() {
   // Stores the application currently being edited
   const [editingApplicationId, setEditingApplicationId] = useState(null);
 
-  // Stores text entered into the search field
+  // Search + filter state
   const [searchTerm, setSearchTerm] = useState('');
-
-  // Stores selected stage filter
   const [stageFilter, setStageFilter] = useState('All');
 
+  // Archive dialog state
+  const [openArchiveDialog, setOpenArchiveDialog] = useState(false);
+  const [archivingApplicationId, setArchivingApplicationId] = useState(null);
+  const [archiveReason, setArchiveReason] = useState('Rejected');
+
   /**
-   * Fetch applications for the logged-in user.
-   * the JWT token is read from localStorage and sent in the Authorization header
+   * Load applications when the page first renders.
+   */
+  useEffect(() => {
+    fetchApplications();
+  }, []);
+
+  /**
+   * Fetches the logged-in user's active applications from the backend.
    */
   async function fetchApplications() {
     const token = localStorage.getItem('token');
-    // If no token exists, redirect back to auth page
+
     if (!token) {
       navigate('/');
       return;
     }
 
     try {
+      setError('');
+      setLoading(true);
+
       const response = await fetch('http://localhost:3001/applications', {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -93,12 +108,6 @@ function ApplicationsPage() {
       setLoading(false);
     }
   }
-  /**
-   * Runs when the page loads to fetch applications.
-   */
-  useEffect(() => {
-    fetchApplications();
-  }, []);
 
   /**
    * Returns a simple MUI Chip color based on application stage.
@@ -119,6 +128,7 @@ function ApplicationsPage() {
         return 'default';
     }
   }
+
   /**
    * Opens the dialog in create mode.
    */
@@ -162,13 +172,33 @@ function ApplicationsPage() {
   }
 
   /**
-   * Closes the dialog and clears mode-specific state.
+   * Closes the create/edit dialog and clears mode-specific state.
    */
   function handleCloseDialog() {
     setOpenDialog(false);
     setSubmitError('');
     setIsEditMode(false);
     setEditingApplicationId(null);
+  }
+
+  /**
+   * Opens the archive dialog for the selected application.
+   */
+  function handleOpenArchiveDialog(applicationId) {
+    setArchivingApplicationId(applicationId);
+    setArchiveReason('Rejected');
+    setSubmitError('');
+    setOpenArchiveDialog(true);
+  }
+
+  /**
+   * Closes the archive dialog and clears archive state.
+   */
+  function handleCloseArchiveDialog() {
+    setOpenArchiveDialog(false);
+    setArchivingApplicationId(null);
+    setArchiveReason('Rejected');
+    setSubmitError('');
   }
 
   /**
@@ -184,40 +214,7 @@ function ApplicationsPage() {
   }
 
   /**
-   * Fetches the logged-in user's applications from the backend.
-   * This is reused after creating a new application so the list refreshes.
-   */
-  async function fetchApplications() {
-    const token = localStorage.getItem('token');
-
-    if (!token) {
-      navigate('/');
-      return;
-    }
-
-    try {
-      const response = await fetch('http://localhost:3001/applications', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch applications');
-      }
-
-      setApplications(data);
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  /**
-   * Sends a new application to the backend.
+   * Creates or updates an application.
    */
   async function handleSubmitApplication(event) {
     event.preventDefault();
@@ -262,57 +259,81 @@ function ApplicationsPage() {
   }
 
   /**
-   * Deletes an application after user confirmation.
+   * Archives an application with the selected archive reason.
    */
-  async function handleDeleteApplication(applicationId) {
-    const confirmed = window.confirm(
-      'Are you sure you want to delete this application?'
-    );
-
-    if (!confirmed) return;
+  async function handleArchiveApplication() {
+    if (!archivingApplicationId) return;
 
     const token = localStorage.getItem('token');
 
     try {
       const response = await fetch(
-        `http://localhost:3001/applications/${applicationId}`,
+        `http://localhost:3001/applications/${archivingApplicationId}/archive`,
         {
-          method: 'DELETE',
+          method: 'PUT',
           headers: {
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
+          body: JSON.stringify({
+            archive_reason: archiveReason,
+          }),
         }
       );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to delete application');
+        throw new Error(data.error || 'Failed to archive application');
       }
 
       await fetchApplications();
+      setSubmitError('');
+      handleCloseArchiveDialog();
     } catch (error) {
-      setError(error.message);
+      setSubmitError(error.message);
     }
   }
+
   /**
    * Filters applications based on search term and selected stage.
    */
-  const filteredApplications = applications.filter((application) => {
-    const matchesSearch =
-      application.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      application.position_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (application.location || '').toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredApplications = useMemo(() => {
+    return applications.filter((application) => {
+      const matchesSearch =
+        application.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        application.position_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (application.location || '').toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStage = stageFilter === 'All' || application.stage === stageFilter;
+      const matchesStage = stageFilter === 'All' || application.stage === stageFilter;
 
-    return matchesSearch && matchesStage;
-  });
+      return matchesSearch && matchesStage;
+    });
+  }, [applications, searchTerm, stageFilter]);
+
+  /**
+   * If the currently selected application disappears after filtering,
+   * automatically select the first visible application.
+   */
+  useEffect(() => {
+    if (filteredApplications.length === 0) {
+      setSelectedApplication(null);
+      return;
+    }
+
+    const selectedStillVisible = filteredApplications.some(
+      (application) => application.id === selectedApplication?.id
+    );
+
+    if (!selectedStillVisible) {
+      setSelectedApplication(filteredApplications[0]);
+    }
+  }, [filteredApplications, selectedApplication]);
 
   return (
     <AppLayout title="Applications">
       <Stack spacing={3}>
-        {/* Page header with button placeholder for future create form */}
+        {/* Page header */}
         <Box
           sx={{
             display: 'flex',
@@ -323,8 +344,9 @@ function ApplicationsPage() {
           }}
         >
           <Typography variant="h5" fontWeight={700}>
-            My Applications
+            Applications
           </Typography>
+
           <TextField
             size="small"
             label="Search"
@@ -347,33 +369,139 @@ function ApplicationsPage() {
             <MenuItem value="Offer">Offer</MenuItem>
             <MenuItem value="Rejected">Rejected</MenuItem>
           </TextField>
+
           <Button variant="contained" onClick={handleOpenDialog}>
             New Application
           </Button>
         </Box>
 
-        {/* Error message if fetch fails */}
+        {/* Error message */}
         {error && <Alert severity="error">{error}</Alert>}
 
-        {/* Loading state */}
+        {/* Loading state / main content */}
         {loading ? (
           <Typography>Loading applications...</Typography>
-        ) : filteredApplications.length === 0 ? (
-          // Empty state if user has no applications yet
-          <Paper sx={{ p: 3, borderRadius: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              No applications yet
-            </Typography>
-            <Typography>
-              Try adjusting your search or filter, or create a new applicaiton.
-            </Typography>
-          </Paper>
         ) : (
-          // Application cards
-          <Stack spacing={2}>
-            {filteredApplications.map((application) => (
-              <Paper key={application.id} sx={{ p: 3, borderRadius: 3 }}>
-                <Stack spacing={1.5}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', lg: '1.4fr 1fr' },
+              gap: 3,
+            }}
+          >
+            {/* Left panel: applications list */}
+            <Paper sx={{ borderRadius: 3, overflow: 'hidden' }}>
+              <Box sx={{ p: 3, pb: 2 }}>
+                <Typography variant="subtitle1" fontWeight={700}>
+                  {filteredApplications.length} Application
+                  {filteredApplications.length === 1 ? '' : 's'}
+                </Typography>
+              </Box>
+
+              {/* Table-style column headers */}
+              <Box
+                sx={{
+                  px: 3,
+                  pb: 1.5,
+                  display: 'grid',
+                  gridTemplateColumns: '1.2fr 1fr 1fr',
+                  gap: 2,
+                }}
+              >
+                <Typography variant="caption" fontWeight={700} color="text.secondary">
+                  Company
+                </Typography>
+                <Typography variant="caption" fontWeight={700} color="text.secondary">
+                  Position
+                </Typography>
+                <Typography variant="caption" fontWeight={700} color="text.secondary">
+                  Stage
+                </Typography>
+              </Box>
+
+              <Divider />
+
+              {/* Empty list state */}
+              {filteredApplications.length === 0 ? (
+                <Box sx={{ p: 3 }}>
+                  <Typography variant="h6" gutterBottom>
+                    No applications yet
+                  </Typography>
+                  <Typography color="text.secondary">
+                    Try adjusting your search or filter, or create a new application.
+                  </Typography>
+                </Box>
+              ) : (
+                <Stack divider={<Divider />}>
+                  {filteredApplications.map((application) => {
+                    const isSelected = selectedApplication?.id === application.id;
+
+                    return (
+                      <Box
+                        key={application.id}
+                        onClick={() => setSelectedApplication(application)}
+                        sx={{
+                          cursor: 'pointer',
+                          display: 'grid',
+                          gridTemplateColumns: '6px 1.2fr 1fr 1fr',
+                          gap: 2,
+                          alignItems: 'center',
+                          bgcolor: isSelected
+                            ? 'rgba(33, 150, 243, 0.08)'
+                            : 'transparent',
+                          transition: '0.2s ease',
+                          '&:hover': {
+                            bgcolor: isSelected
+                              ? 'rgba(33, 150, 243, 0.12)'
+                              : 'rgba(0,0,0,0.03)',
+                          },
+                        }}
+                      >
+                        {/* Blue selection bar */}
+                        <Box
+                          sx={{
+                            alignSelf: 'stretch',
+                            bgcolor: isSelected ? 'primary.main' : 'transparent',
+                          }}
+                        />
+
+                        <Box sx={{ py: 2, pl: 1 }}>
+                          <Typography fontWeight={600}>
+                            {application.company_name || 'Unnamed Company'}
+                          </Typography>
+                        </Box>
+
+                        <Box sx={{ py: 2 }}>
+                          <Typography color="text.secondary">
+                            {application.position_title || 'Untitled Role'}
+                          </Typography>
+                        </Box>
+
+                        <Box sx={{ py: 2, pr: 2 }}>
+                          <Typography color="text.secondary">
+                            {application.stage || 'Saved'}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    );
+                  })}
+                </Stack>
+              )}
+            </Paper>
+
+            {/* Right panel: selected application detail */}
+            <Paper sx={{ p: 3, borderRadius: 3, minHeight: 420 }}>
+              {!selectedApplication ? (
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    No application selected
+                  </Typography>
+                  <Typography color="text.secondary">
+                    Select an application from the list to view details.
+                  </Typography>
+                </Box>
+              ) : (
+                <Stack spacing={3}>
                   <Box
                     sx={{
                       display: 'flex',
@@ -385,46 +513,103 @@ function ApplicationsPage() {
                   >
                     <Box>
                       <Typography variant="h6" fontWeight={700}>
-                        {application.company_name} — {application.position_title}
+                        {selectedApplication.company_name} —{' '}
+                        {selectedApplication.position_title}
                       </Typography>
-
-                      <Typography variant="body2" color="text.secondary">
-                        {application.location || 'Location not provided'}
+                      <Typography color="text.secondary">
+                        {selectedApplication.location || 'Location not provided'}
                       </Typography>
                     </Box>
 
-                    {/* Stage indicator */}
                     <Chip
-                      label={application.stage}
-                      color={getStageColor(application.stage)}
+                      label={selectedApplication.stage}
+                      color={getStageColor(selectedApplication.stage)}
                     />
                   </Box>
 
-                  {/* Secondary details */}
-                  <Typography variant="body2">
-                    Job URL: {application.job_url || 'Not provided'}
-                  </Typography>
+                  <Divider />
 
-                  <Typography variant="body2">
-                    Contacts: {application.contacts?.length || 0}
-                  </Typography>
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight={700} gutterBottom>
+                      Application Info
+                    </Typography>
 
-                  <Typography variant="body2">
-                    Activities: {application.activities?.length || 0}
-                  </Typography>
+                    <Stack spacing={1}>
+                      <Typography>
+                        <strong>Job URL:</strong>{' '}
+                        {selectedApplication.job_url ? (
+                          <a
+                            href={selectedApplication.job_url}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {selectedApplication.job_url}
+                          </a>
+                        ) : (
+                          'Not provided'
+                        )}
+                      </Typography>
 
-                  <Typography variant="body2">
-                    Tasks: {application.tasks?.length || 0}
-                  </Typography>
+                      <Typography>
+                        <strong>Salary Min:</strong>{' '}
+                        {selectedApplication.salary_min ?? 'Not provided'}
+                      </Typography>
 
-                  {application.notes && (
-                    <Typography variant="body2">Notes: {application.notes}</Typography>
-                  )}
-                  <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
+                      <Typography>
+                        <strong>Salary Max:</strong>{' '}
+                        {selectedApplication.salary_max ?? 'Not provided'}
+                      </Typography>
+
+                      <Typography>
+                        <strong>Applied At:</strong>{' '}
+                        {selectedApplication.applied_at
+                          ? new Date(
+                              selectedApplication.applied_at
+                            ).toLocaleDateString()
+                          : 'Not provided'}
+                      </Typography>
+                    </Stack>
+                  </Box>
+
+                  <Divider />
+
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight={700} gutterBottom>
+                      Related Records
+                    </Typography>
+
+                    <Stack spacing={1}>
+                      <Typography>
+                        <strong>Contacts:</strong>{' '}
+                        {selectedApplication.contacts?.length || 0}
+                      </Typography>
+                      <Typography>
+                        <strong>Activities:</strong>{' '}
+                        {selectedApplication.activities?.length || 0}
+                      </Typography>
+                      <Typography>
+                        <strong>Tasks:</strong> {selectedApplication.tasks?.length || 0}
+                      </Typography>
+                    </Stack>
+                  </Box>
+
+                  <Divider />
+
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight={700} gutterBottom>
+                      Notes
+                    </Typography>
+                    <Typography color="text.secondary">
+                      {selectedApplication.notes || 'No notes yet'}
+                    </Typography>
+                  </Box>
+
+                  <Divider />
+
+                  <Box sx={{ display: 'flex', gap: 1 }}>
                     <Button
                       variant="outlined"
-                      size="small"
-                      onClick={() => handleOpenEditDialog(application)}
+                      onClick={() => handleOpenEditDialog(selectedApplication)}
                     >
                       Edit
                     </Button>
@@ -432,18 +617,19 @@ function ApplicationsPage() {
                     <Button
                       variant="outlined"
                       color="error"
-                      size="small"
-                      onClick={() => handleDeleteApplication(application.id)}
+                      onClick={() => handleOpenArchiveDialog(selectedApplication.id)}
                     >
-                      Delete
+                      Archive
                     </Button>
                   </Box>
                 </Stack>
-              </Paper>
-            ))}
-          </Stack>
+              )}
+            </Paper>
+          </Box>
         )}
       </Stack>
+
+      {/* Create / Edit Application dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="sm">
         <DialogTitle>{isEditMode ? 'Edit Application' : 'New Application'}</DialogTitle>
 
@@ -525,7 +711,7 @@ function ApplicationsPage() {
                 value={formData.applied_at}
                 onChange={handleChange}
                 fullWidth
-                slotProps={{ InputLabel: { shrink: true } }}
+                InputLabelProps={{ shrink: true }}
               />
 
               <TextField
@@ -547,6 +733,47 @@ function ApplicationsPage() {
             </Button>
           </DialogActions>
         </Box>
+      </Dialog>
+
+      {/* Archive dialog used to move an active application into the archive
+          with a required archive reason. */}
+      <Dialog
+        open={openArchiveDialog}
+        onClose={handleCloseArchiveDialog}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle>Archive Application</DialogTitle>
+
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            {submitError && <Alert severity="error">{submitError}</Alert>}
+
+            <Typography color="text.secondary">
+              Select a reason for moving this application to the archive.
+            </Typography>
+
+            <TextField
+              select
+              label="Reason"
+              value={archiveReason}
+              onChange={(event) => setArchiveReason(event.target.value)}
+              fullWidth
+            >
+              <MenuItem value="Rejected">Rejected</MenuItem>
+              <MenuItem value="Offer Declined">Offer Declined</MenuItem>
+              <MenuItem value="Withdrawn">Withdrawn</MenuItem>
+              <MenuItem value="Position Closed">Position Closed</MenuItem>
+            </TextField>
+          </Stack>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={handleCloseArchiveDialog}>Cancel</Button>
+          <Button variant="contained" color="error" onClick={handleArchiveApplication}>
+            Archive
+          </Button>
+        </DialogActions>
       </Dialog>
     </AppLayout>
   );
