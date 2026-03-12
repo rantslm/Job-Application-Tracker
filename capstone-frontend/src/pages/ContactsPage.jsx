@@ -56,7 +56,7 @@ function ContactsPage() {
     contact_type: 'Other',
     notes: '',
   };
-  // Form state for adding a new contact
+  // Shared form state for add/edit contact dialog.
   const [formData, setFormData] = useState(emptyContactForm);
 
   /**
@@ -527,6 +527,7 @@ function ContactsPage() {
                       variant="outlined"
                       size="small"
                       onClick={() => handleOpenEditDialog(selectedContact)}
+                      color="secondary"
                     >
                       Edit Contact
                     </Button>
