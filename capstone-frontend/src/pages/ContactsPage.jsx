@@ -88,11 +88,19 @@ function ContactsPage() {
       }
 
       setContacts(data);
-
-      // Select the top contact by default on page load
-      if (data.length > 0) {
-        setSelectedContact(data[0]);
+      // select first contact by default or keep currently selected contact
+      if (data.length === 0) {
+        setSelectedContact(null);
+        return;
       }
+
+      setSelectedContact((prevSelected) => {
+        if (!prevSelected) return data[0];
+
+        const matchingContact = data.find((contact) => contact.id === prevSelected.id);
+
+        return matchingContact || data[0];
+      });
     } catch (error) {
       setError(error.message);
     } finally {
@@ -357,7 +365,7 @@ function ContactsPage() {
             onChange={(event) => setSearchTerm(event.target.value)}
           />
 
-          <Button variant="contained" onClick={handleOpenDialog}>
+          <Button variant="contained" onClick={handleOpenDialog} color="secondary">
             Add Contact
           </Button>
         </Box>
