@@ -490,21 +490,38 @@ function ContactsPage() {
                 </Box>
               ) : (
                 <Stack spacing={3}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Avatar sx={{ width: 56, height: 56 }}>
-                      {getInitials(selectedContact)}
-                    </Avatar>
+                  {/* header with name, role, and edit button */}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      gap: 2,
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Avatar sx={{ width: 56, height: 56 }}>
+                        {getInitials(selectedContact)}
+                      </Avatar>
 
-                    <Box>
-                      <Typography variant="h6" fontWeight={700}>
-                        {selectedContact.name || 'Unnamed Contact'}
-                      </Typography>
-                      <Typography color="text.secondary">
-                        {selectedContact.title ||
-                          selectedContact.contact_type ||
-                          'No role provided'}
-                      </Typography>
+                      <Box>
+                        <Typography variant="h6" fontWeight={700}>
+                          {selectedContact.name || 'Unnamed Contact'}
+                        </Typography>
+                        <Typography color="text.secondary">
+                          {selectedContact.title ||
+                            selectedContact.contact_type ||
+                            'No role provided'}
+                        </Typography>
+                      </Box>
                     </Box>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => handleOpenEditDialog(selectedContact)}
+                    >
+                      Edit Contact
+                    </Button>
                   </Box>
 
                   <Divider />
@@ -587,7 +604,9 @@ function ContactsPage() {
 
       {/* Add Contact dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="sm">
-        <DialogTitle>Add Contact</DialogTitle>
+        <DialogTitle>
+          {dialogMode === 'edit' ? 'Edit Contact' : 'Add Contact'}
+        </DialogTitle>
 
         <Box component="form" onSubmit={handleSubmitContact}>
           <DialogContent>
@@ -682,7 +701,7 @@ function ContactsPage() {
           <DialogActions>
             <Button onClick={handleCloseDialog}>Cancel</Button>
             <Button type="submit" variant="contained">
-              Add Contact
+              {dialogMode === 'edit' ? 'Save Changes' : 'Add Contact'}
             </Button>
           </DialogActions>
         </Box>
