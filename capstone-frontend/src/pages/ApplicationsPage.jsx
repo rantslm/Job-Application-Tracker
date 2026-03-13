@@ -630,14 +630,13 @@ function ApplicationsPage() {
                       </Typography>
                     ) : (
                       <Stack spacing={1}>
+                        {/* Navigate to selected activity on task page */}
                         {selectedApplication.activities.map((activity) => (
                           <Paper
                             key={activity.id}
                             variant="outlined"
                             onClick={() =>
-                              navigate('/activity', {
-                                state: { activityId: activity.id },
-                              })
+                              navigateToRecord(navigate, 'activity', activity.id)
                             }
                             sx={{
                               p: 1.5,
@@ -682,15 +681,12 @@ function ApplicationsPage() {
                       </Typography>
                     ) : (
                       <Stack spacing={1}>
+                        {/* Navigate to selected task on task page */}
                         {selectedApplication.tasks.map((task) => (
                           <Paper
                             key={task.id}
                             variant="outlined"
-                            onClick={() =>
-                              navigate('/tasks', {
-                                state: { taskId: task.id },
-                              })
-                            }
+                            onClick={() => navigateToRecord(navigate, 'task', task.id)}
                             sx={{
                               p: 1.5,
                               borderRadius: 2,
