@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -19,10 +19,13 @@ import {
 
 import AppLayout from '../components/AppLayout';
 import { navigateToRecord } from '../utils/navigation';
+import { getIncomingSelectedId, resolveSelectedRecord } from '../utils/selection';
 
 function ApplicationsPage() {
   // Used to redirect user if they are not authenticated
   const navigate = useNavigate();
+  const location = useLocation();
+  const incomingApplicationId = getIncomingSelectedId(location, 'application');
 
   // Stores fetched application records
   const [applications, setApplications] = useState([]);
@@ -77,7 +80,7 @@ function ApplicationsPage() {
    */
   useEffect(() => {
     fetchApplications();
-  }, []);
+  }, [location.search]);
 
   /**
    * Fetches the logged-in user's active applications from the backend.
@@ -107,20 +110,15 @@ function ApplicationsPage() {
       }
 
       setApplications(data);
+
       if (data.length === 0) {
         setSelectedApplication(null);
         return;
       }
 
-      setSelectedApplication((prevSelected) => {
-        if (!prevSelected) return data[0];
-
-        const matchingApplication = data.find(
-          (application) => application.id === prevSelected.id
-        );
-
-        return matchingApplication || data[0];
-      });
+      setSelectedApplication((prevSelected) =>
+        resolveSelectedRecord(data, prevSelected, incomingApplicationId)
+      );
     } catch (error) {
       setError(error.message);
     } finally {
@@ -328,6 +326,22 @@ function ApplicationsPage() {
       return matchesSearch && matchesStage;
     });
   }, [applications, searchTerm, stageFilter]);
+
+  // protects selection after filtering
+  useEffect(() => {
+    if (filteredApplications.length === 0) {
+      setSelectedApplication(null);
+      return;
+    }
+
+    const selectedStillVisible = filteredApplications.some(
+      (application) => application.id === selectedApplication?.id
+    );
+
+    if (!selectedStillVisible) {
+      setSelectedApplication(filteredApplications[0]);
+    }
+  }, [filteredApplications, selectedApplication]);
 
   return (
     <AppLayout title="Applications">
