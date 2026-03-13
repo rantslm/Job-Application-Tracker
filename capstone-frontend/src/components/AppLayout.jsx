@@ -24,7 +24,7 @@ function AppLayout({ title, children }) {
     { label: 'Applications', path: '/applications' },
     { label: 'Contacts', path: '/contacts' },
     { label: 'Tasks', path: '/tasks' },
-    { label: 'Activity', path: '/activity' },
+    { label: 'Activity', path: '/activities' },
     { label: 'Archive', path: '/archive' },
   ];
 
