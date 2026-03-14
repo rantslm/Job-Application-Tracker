@@ -186,11 +186,10 @@ http://localhost:5173
 
 ## Testing
 
-Backend API tests are implemented on the backend testing branch and located in:
+Backend API testing was implemented during backend development and is available on the `be-auth` branch in:
 
 ```text
 capstone-backend/tests
-```
 
 Current test coverage includes:
 
@@ -240,3 +239,4 @@ Production deployment is planned for a future phase. The intended deployment dir
 ## Author
 
 Created by Leilani Rants as part of the Institute of Data Software Engineering Capstone Project.
+```
