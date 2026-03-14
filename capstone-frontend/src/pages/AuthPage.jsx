@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -7,6 +7,7 @@ import {
   Tabs,
   Tab,
   TextField,
+  Stack,
   Button,
   Typography,
   Alert,
@@ -24,15 +25,23 @@ function AuthPage() {
     password: '',
   });
 
+  const featureItems = [
+    'File applications by company, role, salary, and link',
+    'Track each opportunity through your hiring pipeline',
+    'Log calls, emails, interviews, and follow-ups',
+    'Save recruiter and hiring manager contacts by company',
+    'Stay on top of next steps with tasks and reminders',
+  ];
+
+  const [activeFeatureIndex, setActiveFeatureIndex] = useState(0);
+
   // UI feedback state
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
   function handleTabChange(event, newValue) {
     setTabValue(newValue);
     setError('');
-    setSuccess('');
     setFormData({
       email: '',
       password: '',
@@ -51,7 +60,6 @@ function AuthPage() {
   async function handleSubmit(event) {
     event.preventDefault();
     setError('');
-    setSuccess('');
     setLoading(true);
 
     const isLogin = tabValue === 0;
@@ -86,6 +94,14 @@ function AuthPage() {
     }
   }
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveFeatureIndex((prev) => (prev + 1) % featureItems.length);
+    }, 2800);
+
+    return () => clearInterval(interval);
+  }, [featureItems.length]);
+
   return (
     <Container maxWidth="lg">
       <Box
@@ -96,29 +112,116 @@ function AuthPage() {
           alignItems: 'center',
           gap: 4,
           py: 6,
+          backgroundColor: '#fafafa',
         }}
       >
         {/* Left side: startup / intro content */}
-        <Box>
-          <Typography variant="h3" gutterBottom>
+        <Box
+          sx={{
+            maxWidth: 560,
+            pr: { md: 2 },
+          }}
+        >
+          <Typography
+            variant="h3"
+            fontWeight={800}
+            gutterBottom
+            sx={{
+              lineHeight: 1.1,
+            }}
+          >
             Job Application Tracker
           </Typography>
 
-          <Typography variant="h6" sx={{ mb: 2 }}>
+          <Typography
+            variant="h6"
+            sx={{
+              mb: 3,
+              color: 'text.secondary',
+              fontWeight: 500,
+              maxWidth: 520,
+            }}
+          >
             Organize applications, contacts, interviews, and follow-ups in one place.
           </Typography>
 
-          <Typography variant="body1">
-            Track each opportunity by company and position, manage recruiter and hiring
-            manager contacts, log interview activity, and stay on top of tasks
-            throughout your job search.
-          </Typography>
-        </Box>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: '20px 1fr',
+              gap: 2,
+              alignItems: 'start',
+              minHeight: 180,
+            }}
+          >
+            {/* Vertical progress indicators */}
+            <Stack
+              spacing={1.2}
+              sx={{
+                pt: 0.5,
+                alignItems: 'center',
+              }}
+            >
+              {featureItems.map((_, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    width: 8,
+                    height: index === activeFeatureIndex ? 28 : 8,
+                    borderRadius: 999,
+                    bgcolor:
+                      index === activeFeatureIndex
+                        ? 'primary.main'
+                        : 'rgba(0,0,0,0.18)',
+                    transition: 'all 0.3s ease',
+                  }}
+                />
+              ))}
+            </Stack>
 
+            {/* Active feature content */}
+            <Box>
+              <Typography
+                variant="body1"
+                sx={{
+                  fontSize: '1.05rem',
+                  lineHeight: 1.8,
+                  fontWeight: 500,
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                {featureItems[activeFeatureIndex]}
+              </Typography>
+
+              <Typography
+                variant="body2"
+                sx={{
+                  mt: 3,
+                  color: 'text.secondary',
+                  maxWidth: 500,
+                }}
+              >
+                Built to help you manage your search with clarity and keep every
+                opportunity in one organized workspace.
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
         {/* Right side: auth card */}
-        <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
-          <Typography variant="h5" gutterBottom>
+        <Paper
+          elevation={3}
+          sx={{
+            p: 4,
+            borderRadius: 3,
+            border: '1px solid #eaeaea',
+          }}
+        >
+          <Typography variant="h5" fontWeight={700} gutterBottom>
             Welcome
+          </Typography>
+
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Log in or create an account to manage your job search.
           </Typography>
 
           <Tabs value={tabValue} onChange={handleTabChange} sx={{ mb: 2 }}>
@@ -129,11 +232,6 @@ function AuthPage() {
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {error}
-            </Alert>
-          )}
-          {success && (
-            <Alert severity="success" sx={{ mb: 2 }}>
-              {success}
             </Alert>
           )}
 
