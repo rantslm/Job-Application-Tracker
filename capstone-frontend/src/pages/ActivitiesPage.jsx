@@ -26,7 +26,6 @@ import HandshakeIcon from '@mui/icons-material/Handshake';
 
 /* UI icons */
 import PersonIcon from '@mui/icons-material/Person';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 
 /* Layout wrapper used across pages */
@@ -37,7 +36,7 @@ function ActivitiesPage() {
   const navigate = useNavigate();
 
   const location = useLocation();
-  const incomingActivityId = getIncomingSelectedId(location.state, 'activity');
+  const incomingActivityId = getIncomingSelectedId(location, 'activity');
 
   // Stores all fetched activities
   const [activities, setActivities] = useState([]);
@@ -217,14 +216,7 @@ function ActivitiesPage() {
   useEffect(() => {
     fetchActivities();
     fetchApplications();
-  }, []);
-
-  // route state cleanup
-  useEffect(() => {
-    if (location.state?.selection?.recordType === 'activity') {
-      navigate(location.pathname, { replace: true, state: {} });
-    }
-  }, [location.pathname, location.state, navigate]);
+  }, [location.search]);
 
   // loads contacts for selected application, clears invalid contact selection
   useEffect(() => {
@@ -461,9 +453,7 @@ function ActivitiesPage() {
   return (
     <AppLayout title="Activities">
       <Stack spacing={3}>
-        {/* =========================
-          PAGE HEADER
-         ========================= */}
+        {/* PAGE HEADER */}
         <Box
           sx={{
             display: 'flex',
@@ -537,9 +527,7 @@ function ActivitiesPage() {
         {/* Global fetch error */}
         {error && <Alert severity="error">{error}</Alert>}
 
-        {/* =========================
-          LOADING / MAIN CONTENT
-         ========================= */}
+        {/* LOADING / MAIN CONTENT */}
         {loading ? (
           <Typography>Loading activities...</Typography>
         ) : (
@@ -550,9 +538,7 @@ function ActivitiesPage() {
               gap: 3,
             }}
           >
-            {/* =========================
-              LEFT PANEL: ACTIVITY LIST
-             ========================= */}
+            {/* LEFT PANEL: ACTIVITY LIST */}
             <Paper sx={{ borderRadius: 3, overflow: 'hidden' }}>
               {/* Count of filtered activities */}
               <Box sx={{ p: 3, pb: 2 }}>
@@ -677,9 +663,7 @@ function ActivitiesPage() {
               )}
             </Paper>
 
-            {/* =========================
-              RIGHT PANEL: ACTIVITY DETAIL
-             ========================= */}
+            {/* RIGHT PANEL: ACTIVITY DETAIL */}
             <Paper sx={{ p: 3, borderRadius: 3, minHeight: 420 }}>
               {!selectedActivity ? (
                 <Box>
@@ -878,9 +862,7 @@ function ActivitiesPage() {
         )}
       </Stack>
 
-      {/* =========================
-        PLACEHOLDER ADD ACTIVITY DIALOG
-       ========================= */}
+      {/* ADD / EDIT ACTIVITY DIALOG */}
       <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="sm">
         <DialogTitle>
           {dialogMode === 'edit' ? 'Edit Activity' : 'Add Activity'}
