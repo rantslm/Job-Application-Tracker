@@ -22,6 +22,7 @@ import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 
 import AppLayout from '../components/AppLayout';
+import { navigateToRecord } from '../utils/navigation';
 
 //Component State
 function TasksPage() {
@@ -29,9 +30,12 @@ function TasksPage() {
   // all tasks returned from backend
 
   const location = useLocation();
-  const incomingTaskId = getIncomingSelectedId(location.state, 'task');
+  const incomingTaskId = getIncomingSelectedId(location, 'task');
 
   const [tasks, setTasks] = useState([]);
+
+  const [selectedTask, setSelectedTask] = useState(null);
+
   //used to populate application dropdowns
   const [applications, setApplications] = useState([]);
 
@@ -254,15 +258,8 @@ function TasksPage() {
   }
   // fetch on load
   useEffect(() => {
-    fetchTasks();
-  }, []);
-
-  // route state clearing for incoming selection
-  useEffect(() => {
-    if (location.state?.selection?.recordType === 'task') {
-      navigate(location.pathname, { replace: true, state: {} });
-    }
-  }, [location.pathname, location.state, navigate]);
+    loadPageData();
+  }, [location.search]);
 
   function toggleSection(sectionKey) {
     setCollapsedSections((prev) => ({
@@ -514,6 +511,20 @@ function TasksPage() {
   const noDueDateTasks = filteredTasks.filter(isNoDueDate);
   const completedTasks = filteredTasks.filter(isCompleted);
 
+  useEffect(() => {
+    if (filteredTasks.length === 0) {
+      setSelectedTask(null);
+      return;
+    }
+
+    const selectedStillVisible = filteredTasks.some(
+      (task) => task.id === selectedTask?.id
+    );
+
+    if (!selectedStillVisible) {
+      setSelectedTask(filteredTasks[0]);
+    }
+  }, [filteredTasks, selectedTask]);
   /**
    * Reusable component used to render each task section.
    *
@@ -589,6 +600,7 @@ function TasksPage() {
             <Stack>
               {tasks.map((task, index) => {
                 const isEditing = editingTaskId === task.id;
+                const isSelected = selectedTask?.id === task.id;
 
                 return (
                   <Box
@@ -597,7 +609,14 @@ function TasksPage() {
                       display: 'grid',
                       gridTemplateColumns: '6px 44px minmax(0, 1fr) auto',
                       alignItems: 'stretch',
-                      bgcolor: tinted ? 'rgba(244, 67, 54, 0.10)' : '#fff',
+                      bgcolor: isSelected
+                        ? 'rgba(34, 197, 94, 0.10)'
+                        : tinted
+                          ? 'rgba(244, 67, 54, 0.10)'
+                          : '#fff',
+                      outline: isSelected
+                        ? '2px solid rgba(34, 197, 94, 0.35)'
+                        : 'none',
                       borderBottom:
                         index === tasks.length - 1 ? 'none' : '1px solid #eceff3',
                     }}
@@ -733,18 +752,41 @@ function TasksPage() {
                             {task.title}
                           </Typography>
 
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              mt: 0.5,
-                              color: '#2563eb',
-                              fontSize: '0.92rem',
-                            }}
-                          >
-                            {task.application
-                              ? `${task.application.company_name} — ${task.application.position_title}`
-                              : 'No application'}
-                          </Typography>
+                          {task.application ? (
+                            <Typography
+                              variant="body2"
+                              onClick={() =>
+                                navigateToRecord(
+                                  navigate,
+                                  'application',
+                                  task.application.id
+                                )
+                              }
+                              sx={{
+                                mt: 0.5,
+                                color: '#2563eb',
+                                fontSize: '0.92rem',
+                                cursor: 'pointer',
+                                '&:hover': {
+                                  textDecoration: 'underline',
+                                },
+                              }}
+                            >
+                              {task.application.company_name} —{' '}
+                              {task.application.position_title}
+                            </Typography>
+                          ) : (
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                mt: 0.5,
+                                color: 'text.secondary',
+                                fontSize: '0.92rem',
+                              }}
+                            >
+                              No application
+                            </Typography>
+                          )}
                         </Box>
                       )}
                     </Box>
