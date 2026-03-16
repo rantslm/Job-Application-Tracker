@@ -226,7 +226,7 @@ The application is functional as an MVP and supports the core workflow of a job 
 
 Production deployment is planned for a future phase. The intended deployment direction is AWS, with Docker-based containerization considered as part of the deployment strategy.
 
-## Future Improvements
+## Work In Progress
 
 - Deploy frontend and backend to a cloud environment
 - Connect to AWS-based infrastructure
@@ -235,6 +235,10 @@ Production deployment is planned for a future phase. The intended deployment dir
 - Add file attachment support
 - Extend search, filtering, and sorting across records
 - Improve responsive polish and UX refinements
+- DRY up API calls
+- Global State Management
+- Form component modularization
+- Parse incoming emails to automatically track applications
 
 ## Author
 
