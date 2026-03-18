@@ -240,6 +240,8 @@ Production deployment is planned for a future phase. The intended deployment dir
 - Form component modularization
 - Parse incoming emails to automatically track applications
 
-## Author
+## License
 
-Created by Leilani Rants as part of the Institute of Data Software Engineering Capstone Project.
+This project is part of my personal portfolio.
+
+Code is provided for viewing purposes only and may not be reused, modified, or distributed without permission.
